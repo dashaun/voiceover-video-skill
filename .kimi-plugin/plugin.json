@@ -1,0 +1,24 @@
+{
+  "$schema": "https://kimi.com/schemas/kimi.plugin.schema.json",
+  "name": "voiceover-video",
+  "version": "1.1.0",
+  "description": "Turn a voice recording into a fully animated, captioned, sound-designed short video with any AI agent that can run shell commands.",
+  "keywords": [
+    "video",
+    "voiceover",
+    "captions",
+    "animation",
+    "shorts",
+    "vertical-video"
+  ],
+  "author": "Dancan254",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Voiceover Video",
+    "shortDescription": "Turn a voice recording into an animated vertical Short",
+    "longDescription": "Voice note in, animated vertical Short out: word-level captions, kinetic typography, camera moves, synthesized sound design and a voice-ducked music bed. The workflow runs entirely on your machine using local transcription, headless Chromium rendering, and FFmpeg encoding.",
+    "developerName": "Dancan254",
+    "websiteURL": "https://github.com/Dancan254/voiceover-video-skill"
+  }
+}

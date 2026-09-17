@@ -2,7 +2,7 @@
 
 **An AI-agent skill that turns a voice recording into a fully edited, animated short video.**
 
-Drop in a voice note. Claude transcribes it word by word, designs a shot list, finds images, builds
+Drop in a voice note. Your agent transcribes it word by word, designs a shot list, finds images, builds
 every scene as kinetic typography and motion graphics timed to your words, adds sound design and a
 music bed that ducks under your voice, and renders a 1080×1920 Short.
 
@@ -27,7 +27,7 @@ your machine.
 - **Film finish**: grain, vignette, loudness normalised to −14 LUFS
 - **Optional face-cam bookends**: film the script on your phone in one take; your opening line and
   sign-off stay on camera and everything between is animated
-- **QA gates**: Claude reviews a contact sheet of every shot before the full render, and checks the
+- **QA gates**: the agent reviews a contact sheet of every shot before the full render, and checks the
   encoded file, not just the preview
 
 ## How it works
@@ -38,11 +38,11 @@ voice.mp4
   ▼
 transcript.txt ── you proofread ──► build_captions.py
   │
-  ▼  Claude writes a shot list  ──► you approve it
+  ▼  the agent writes a shot list  ──► you approve it
   │
-  ▼  fill_template.py + Claude authors the scenes (HTML + GSAP)
+  ▼  fill_template.py + the agent authors the scenes (HTML + GSAP)
   │
-  ▼  render.js stills → contact-sheet.sh → Claude reviews, fixes, repeats
+  ▼  render.js stills → contact-sheet.sh → the agent reviews, fixes, repeats
   │
   ├─► render.js cues → synth_audio.py      sfx.wav + music.wav
   └─► render-frames.sh                     headless Chromium, frame-exact
@@ -61,12 +61,12 @@ always produces the same video, however slow the machine.
 
 | | |
 |---|---|
-| [Claude Code](https://claude.com/claude-code) | the agent that runs the skill |
+| [Claude Code](https://claude.com/claude-code) or [Kimi Code CLI](https://www.kimi.com/code) | the agent that runs the skill |
 | Node 18+ | frame rendering |
 | Python 3.10+ with `faster-whisper` and `numpy` | transcription and sound synthesis |
 | FFmpeg | mixing and encoding |
 
-Runs on macOS and Linux. On Windows, run Claude Code inside WSL: the scripts are bash.
+Runs on macOS and Linux. On Windows, run your agent inside WSL: the scripts are bash.
 
 ```bash
 pip install faster-whisper numpy
@@ -75,23 +75,36 @@ pip install faster-whisper numpy
 
 ### Add the skill
 
-**As a plugin** (recommended), inside Claude Code:
+**As a plugin** (recommended):
+
+Inside Claude Code:
 
 ```
 /plugin marketplace add Dancan254/voiceover-video-skill
 /plugin install voiceover-video@voiceover-video-skill
 ```
 
+Inside Kimi Code CLI:
+
+```
+/plugins install https://github.com/Dancan254/voiceover-video-skill
+```
+
+Then start a fresh session (`/new` in Kimi Code, or `/restart` in Claude Code).
+
 **Or copy it** into your personal skills:
 
 ```bash
 git clone https://github.com/Dancan254/voiceover-video-skill
+# Claude Code
 cp -r voiceover-video-skill/skills/voiceover-video ~/.claude/skills/
+# Kimi Code CLI
+cp -r voiceover-video-skill/skills/voiceover-video ~/.kimi-code/skills/
 ```
 
 ### One-time setup
 
-Nothing to run by hand: Claude runs `setup.sh` the first time you use the skill. It installs
+Nothing to run by hand: the agent runs `setup.sh` the first time you use the skill. It installs
 `playwright-core` and its Chromium build, and downloads GSAP and the fonts. It prints `ready` or names
 exactly what is missing.
 
@@ -99,17 +112,19 @@ If you copied the skill instead of installing the plugin, you can run it yoursel
 
 ```bash
 bash ~/.claude/skills/voiceover-video/scripts/setup.sh
+# or, for Kimi Code CLI:
+bash ~/.kimi-code/skills/voiceover-video/scripts/setup.sh
 ```
 
 ---
 
 ## Use it
 
-In Claude Code:
+In Claude Code or Kimi Code CLI:
 
 > make a video out of ~/Downloads/voice-note.m4a
 
-Claude will tell you the transcription estimate, show you the shot list for approval, and hand you the
+The agent will tell you the transcription estimate, show you the shot list for approval, and hand you the
 finished file with image credits and anything it could not verify.
 
 Want to be on camera? Film yourself saying the script on your phone in one take and pass the video:
@@ -137,7 +152,7 @@ bash voiceover-video-skill/skills/voiceover-video/scripts/setup.sh
 ```
 
 Then point your agent at `SKILL.md` and give it the audio file. Claude Code users get the same thing
-through `/plugin install`, which only saves the cloning.
+through `/plugin install`, and Kimi Code CLI users through `/plugins install`, which only saves the cloning.
 
 **What the agent needs:** a shell, file writing, and the ability to read text output. Vision is
 optional and improves Step 5 (judging sourced images) and Step 7 (reviewing the contact sheet): an
@@ -147,7 +162,7 @@ you to listen to the mix before posting.
 
 ## Make it yours
 
-The first time you use the skill, Claude asks for your handle, your colours (a named look or your own
+The first time you use the skill, the agent asks for your handle, your colours (a named look or your own
 accent and background), your fonts and where videos should go, then writes the brand file for you. Every
 question has a default, so "just use the defaults" is a valid answer. Skip it and your video carries the
 example brand's `@yourhandle`.
@@ -157,6 +172,8 @@ To set it up yourself instead, write `~/.config/voiceover-video/brand.json` dire
 ```bash
 # Adjust the path if you installed the skill as a plugin or copied it elsewhere
 python3 ~/.claude/skills/voiceover-video/scripts/init_brand.py --handle @yourhandle --preset carbon-cyan
+# or, if you copied the skill into Kimi Code CLI's skill directory:
+python3 ~/.kimi-code/skills/voiceover-video/scripts/init_brand.py --handle @yourhandle --preset carbon-cyan
 ```
 
 ```json
@@ -180,7 +197,7 @@ python3 ~/.claude/skills/voiceover-video/scripts/init_brand.py --handle @yourhan
 }
 ```
 
-Any Google Font works. After changing fonts, ask Claude to re-run the skill's setup. A `./brand.json` in the current
+Any Google Font works. After changing fonts, ask the agent to re-run the skill's setup. A `./brand.json` in the current
 directory overrides the global one, so each project can have its own look.
 
 The default type is **Archivo** — expanded black for headlines, condensed for captions — with
@@ -190,7 +207,7 @@ The default type is **Archivo** — expanded black for headlines, condensed for 
 
 ## Good to know
 
-- **Claude cannot hear the result.** Loudness is measured, taste is not. Listen before you post.
+- **The agent cannot hear the result.** Loudness is measured, taste is not. Listen before you post.
 - **Render time.** Roughly 3 minutes of frame rendering for a 108-second Short on 10 CPU workers,
   plus transcription at 2–3x realtime.
 - **File size.** Film grain resists compression; the encoder caps the bitrate so a 108-second vertical

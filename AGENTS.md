@@ -6,7 +6,7 @@ repository**. If you are *running* the skill to make a video, follow
 
 ## What this repo is
 
-One Claude Code skill, `voiceover-video`, packaged as a plugin. It turns a voice recording into an
+One agent-agnostic skill, `voiceover-video`, packaged as a plugin for Claude Code and Kimi Code CLI. It turns a voice recording into an
 animated vertical video. The skill is a workflow document plus the scripts it calls:
 
 ```
@@ -29,8 +29,9 @@ skills/voiceover-video/
     └── mix-encode.sh            voice + ducked music + SFX → mp4
 ```
 
-`.claude-plugin/marketplace.json` registers the skill for `/plugin install`. It is additive: other
-hosts ignore it and read `SKILL.md` directly.
+`.claude-plugin/marketplace.json` registers the skill for Claude Code's `/plugin install`, and
+`.kimi-plugin/plugin.json` registers it for Kimi Code CLI's `/plugins install`. Both are additive: other
+hosts ignore them and read `SKILL.md` directly.
 
 ## What an agent needs to run this
 
