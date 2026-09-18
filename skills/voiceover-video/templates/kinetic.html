@@ -94,7 +94,8 @@ function ticker(sel, s, e, speed=160){ tl.fromTo(sel,{x:0},{x:-speed*(e-s),durat
 
 const TYPERS = [], COUNTERS = [];
 function typer(el, text, s, e){ TYPERS.push({el:q(el),text,s,e}); SFX.push({t:s,type:"type",dur:e-s}); }
-function counter(el, from, to, s, e){ COUNTERS.push({el:q(el),from,to,s,e}); SFX.push({t:s,type:"tick",dur:e-s}); }
+// sep=true prints 200,000 instead of 200000; leave it off for years
+function counter(el, from, to, s, e, sep=false){ COUNTERS.push({el:q(el),from,to,s,e,sep}); SFX.push({t:s,type:"tick",dur:e-s}); }
 
 // Camera and clip frames come from extract_face.sh / extract_clip.sh, numbered by edit frame, so seeking stays frame-exact
 const MEDIA = [];
@@ -151,9 +152,10 @@ function renderText(t){
     const n = t<s?0:t>=e?text.length:Math.floor((t-s)/(e-s)*text.length);
     el.textContent = text.slice(0,n);
   });
-  COUNTERS.forEach(({el,from,to,s,e})=>{
+  COUNTERS.forEach(({el,from,to,s,e,sep})=>{
     const k = t<s?0:t>=e?1:(t-s)/(e-s);
-    el.textContent = Math.round(from+(to-from)*(1-Math.pow(1-k,3)));
+    const n = Math.round(from+(to-from)*(1-Math.pow(1-k,3)));
+    el.textContent = sep ? n.toLocaleString("en-US") : n;
   });
   TERMINALS.forEach(({el,lines})=>{
     let html = "";

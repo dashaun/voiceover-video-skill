@@ -78,6 +78,7 @@ Add a `#pinkflash` burst on the last word. Hide captions.
 Years, stats, "30+ years later". Ease-out so it settles on the number.
 ```js
 counter("#s03y", 1984, 1991, 6.5, 7.2); hit(7.2,.8);
+counter("#s18n", 0, 200000, 50.6, 51.3, true);   // true adds thousands separators: 200,000
 ```
 
 ### Typewriter / terminal

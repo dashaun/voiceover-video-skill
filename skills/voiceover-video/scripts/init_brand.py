@@ -24,10 +24,12 @@ PRESETS = {
     "carbon-cyan": {"bg": "#0d1117", "accent": "#21d4c2", "textBody": "#E4EAF2", "textMuted": "#7D8DA5"},
     "ink-amber": {"bg": "#14110d", "accent": "#f5a524", "textBody": "#EDE6DA", "textMuted": "#9A8C76"},
     "violet-signal": {"bg": "#100e1b", "accent": "#8b5cf6", "textBody": "#E8E6F2", "textMuted": "#8079A3"},
+    "kimi-purple": {"bg": "#0b0b14", "accent": "#8b5cf6", "textBody": "#f0f0fa", "textMuted": "#8b8bb5"},
 }
 
 FONT_URLS = {
     ("Archivo", "Geist Mono"): "https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Geist+Mono:wght@400..700&display=swap",
+    ("Outfit", "JetBrains Mono"): "https://fonts.googleapis.com/css2?family=Outfit:wght@400..900&family=JetBrains+Mono:wght@400..700&display=swap",
 }
 
 

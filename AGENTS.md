@@ -6,8 +6,14 @@ repository**. If you are *running* the skill to make a video, follow
 
 ## What this repo is
 
-One agent-agnostic skill, `voiceover-video`, packaged as a plugin for Claude Code and Kimi Code CLI. It turns a voice recording into an
-animated vertical video. The skill is a workflow document plus the scripts it calls:
+Two skills packaged as one plugin for Claude Code and Kimi Code CLI:
+
+- `voiceover-video` — the model-agnostic engine.
+- `kimi-video` — a Kimi-branded edition that reuses the engine scripts and templates.
+
+Both turn a voice recording into an animated vertical video. The shared engine scripts and templates
+live in `skills/voiceover-video/`; the Kimi edition adds its own SKILL.md and brand defaults in
+`skills/kimi-video/`.
 
 ```
 skills/voiceover-video/
