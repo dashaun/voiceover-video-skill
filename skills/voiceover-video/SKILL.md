@@ -233,11 +233,15 @@ Clip audio ducks under the narration automatically, so it only really plays over
 For the speaker's line to land, place the clip over a gap in the recording (a scripted `[CLIP]` beat) or
 leave it silent and put the quote on screen with a *Portrait quote*.
 
+**B-roll is the same mechanism.** A full-bleed or picture-in-picture clip playing under narration is just
+a `clip()` (or the alias `broll()`). Use the *B-roll under narration* block in `scene-blocks.md` for the
+full-bleed + lower-third pattern.
+
 Replace the demo shots between `BEGIN SHOTS` / `END SHOTS` (markup) and `BEGIN TIMELINE` /
 `END TIMELINE` (GSAP) with your shot list, using the helpers the template already defines. Keep the
 outer `#world` and `#cam` containers intact:
 `shot()`, `slam()`, `hit()`, `rise()`, `pop()`, `drift()`, `kenBurns()`, `lowerThird()`, `ticker()`,
-`typer()`, `counter()`, `terminal()`, `faceCam()`, `clip()`, and the `NOCAP` ranges. Every helper that makes noise pushes its own sound cue.
+`typer()`, `counter()`, `terminal()`, `faceCam()`, `clip()`, `broll()`, and the `NOCAP` ranges. Every helper that makes noise pushes its own sound cue.
 
 The display style (`.xl`) is uppercase and width-expanded; captions are condensed. Size headlines
 for the expanded width — a vertical frame fits ~6 characters at 250px.
