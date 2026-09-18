@@ -40,6 +40,8 @@
 <script>
 const D = {{duration}}, E = "power2.out", EI = "power2.inOut", EX = "expo.out";
 const tl = gsap.timeline({paused:true});
+// Per-theme motion profile from templates.json: default entry, shake and flash strength, caption pulse
+const THEME = Object.assign({enter:null, shake:1, flash:1, pulse:1}, {{theme.motion}});
 const SFX = [];
 const q = s => document.querySelector(s);
 
@@ -50,6 +52,13 @@ function shot(id, s, e, enter){
   SHOTS.push({id, s, e});
   tl.set("#"+id,{visibility:"visible"},s);
   tl.set("#"+id,{visibility:"hidden"},e);
+  if(enter === undefined) enter = THEME.enter;
+  if(enter === "slide"){ tl.fromTo("#"+id,{xPercent:100},{xPercent:0,duration:.45,ease:"power3.out"},s); SFX.push({t:s-.12,type:"whoosh"}); }
+  if(enter === "wipe"){ tl.fromTo("#"+id,{clipPath:"inset(0% 100% 0% 0%)"},{clipPath:"inset(0% 0% 0% 0%)",duration:.45,ease:"power3.inOut"},s); SFX.push({t:s-.1,type:"whoosh"}); }
+  if(enter === "iris"){ tl.fromTo("#"+id,{clipPath:"circle(0% at 50% 45%)"},{clipPath:"circle(120% at 50% 45%)",duration:.6,ease:"power2.in"},s); SFX.push({t:s-.1,type:"whoosh"}); }
+  if(enter === "soft"){ tl.fromTo("#"+id,{scale:1.06,opacity:0,filter:"blur(12px)"},{scale:1,opacity:1,filter:"blur(0px)",duration:.6,ease:E},s); }
+  if(enter === "flash"){ tl.fromTo("#flash",{opacity:.9},{opacity:0,duration:.35,ease:E,immediateRender:false},s); SFX.push({t:s,type:"hit",power:.5}); }
+  if(enter === "glitch"){ tl.fromTo("#"+id,{x:-40,filter:"hue-rotate(90deg) saturate(3)"},{keyframes:[{x:30,duration:.04},{x:-20,duration:.04},{x:10,duration:.04},{x:0,filter:"hue-rotate(0deg) saturate(1)",duration:.06}],immediateRender:false},s); SFX.push({t:s,type:"error"}); }
   if(enter === "whip"){ tl.fromTo("#"+id,{xPercent:40,filter:"blur(30px)"},{xPercent:0,filter:"blur(0px)",duration:.28,ease:EX},s); SFX.push({t:s-.12,type:"whoosh"}); }
   if(enter === "whipUp"){ tl.fromTo("#"+id,{yPercent:30,filter:"blur(30px)"},{yPercent:0,filter:"blur(0px)",duration:.28,ease:EX},s); SFX.push({t:s-.12,type:"whoosh"}); }
   if(enter === "zoom"){ tl.fromTo("#"+id,{scale:1.5,filter:"blur(24px)",opacity:0},{scale:1,filter:"blur(0px)",opacity:1,duration:.35,ease:EX},s); SFX.push({t:s-.1,type:"whoosh"}); }
@@ -57,9 +66,10 @@ function shot(id, s, e, enter){
 }
 function hit(t, power=1){
   SFX.push({t,type:"hit",power});
+  const flash = power*THEME.flash; power *= THEME.shake;
   tl.fromTo("#cam",{scale:1+.05*power},{scale:1,duration:.45,ease:EX,immediateRender:false},t);
   tl.fromTo("#cam",{x:-18*power,y:10*power},{keyframes:[{x:14*power,y:-8*power,duration:.04},{x:-8*power,y:6*power,duration:.04},{x:0,y:0,duration:.08}],immediateRender:false},t);
-  tl.fromTo("#flash",{opacity:.35*power},{opacity:0,duration:.3,ease:E,immediateRender:false},t);
+  tl.fromTo("#flash",{opacity:.35*flash},{opacity:0,duration:.3,ease:E,immediateRender:false},t);
 }
 function slam(sel, t, power=1){
   tl.fromTo(sel,{scale:2.4,opacity:0,filter:"blur(20px)"},{scale:1,opacity:1,filter:"blur(0px)",duration:.22,ease:EX},t-.08);
@@ -69,14 +79,27 @@ function rise(sel, t, d=.45){ tl.fromTo(sel,{y:70,opacity:0},{y:0,opacity:1,dura
 function pop(sel, t){ tl.fromTo(sel,{scale:.4,opacity:0},{scale:1,opacity:1,duration:.4,ease:"back.out(2)"},t); SFX.push({t,type:"pop"}); }
 function stamp(sel, t){ tl.fromTo(sel,{scale:3,opacity:0},{scale:1,opacity:1,duration:.2,ease:EX},t); SFX.push({t,type:"stamp"}); }
 function drift(sel, s, e, from, to){ tl.fromTo(sel,from,{...to,duration:e-s,ease:"none"},s); }
+// Slow pan-and-zoom on a still so a photo held for seconds never looks frozen
+function kenBurns(sel, s, e, dir="in"){
+  const wide = {scale:1, xPercent:0}, close = {scale:1.18, xPercent:dir==="left"?-4:dir==="right"?4:0};
+  tl.fromTo(sel, dir==="out"?close:wide, {...(dir==="out"?wide:close), duration:e-s, ease:"none"}, s);
+}
+function lowerThird(sel, s, e){
+  tl.fromTo(sel,{clipPath:"inset(0% 100% 0% 0%)"},{clipPath:"inset(0% 0% 0% 0%)",duration:.45,ease:EX},s);
+  tl.fromTo(sel+" .lower-role",{y:20,opacity:0},{y:0,opacity:1,duration:.35,ease:EX},s+.25);
+  tl.to(sel,{clipPath:"inset(0% 0% 0% 100%)",duration:.35,ease:"power2.in"},e-.35);
+  SFX.push({t:s,type:"whoosh"});
+}
+function ticker(sel, s, e, speed=160){ tl.fromTo(sel,{x:0},{x:-speed*(e-s),duration:e-s,ease:"none"},s); }
 
 const TYPERS = [], COUNTERS = [];
 function typer(el, text, s, e){ TYPERS.push({el:q(el),text,s,e}); SFX.push({t:s,type:"type",dur:e-s}); }
 function counter(el, from, to, s, e){ COUNTERS.push({el:q(el),from,to,s,e}); SFX.push({t:s,type:"tick",dur:e-s}); }
 
-// Camera frames come from extract_face.sh, numbered by edit frame, so seeking stays frame-exact
-const FACES = [];
-function faceCam(id, s, e, enter){ shot(id, s, e, enter); FACES.push({img:q("#"+id+">img"),s,e}); }
+// Camera and clip frames come from extract_face.sh / extract_clip.sh, numbered by edit frame, so seeking stays frame-exact
+const MEDIA = [];
+function faceCam(id, s, e, enter){ shot(id, s, e, enter); MEDIA.push({img:q("#"+id+">img"),dir:"face",fix:"extract_face.sh",s,e}); }
+function clip(sel, name, s, e){ MEDIA.push({img:q(sel),dir:"clips/"+name,fix:`extract_clip.sh … ${name} ${s} ${e}`,s,e}); }
 
 // Lines with mixed colours: [{t, e, html}] rebuilt every frame so seeking stays deterministic
 const TERMINALS = [];
@@ -119,7 +142,7 @@ function renderCaptions(t){
   capbox.style.visibility="visible";
   if(idx!==lastPhrase){ capbox.innerHTML = PH[idx].map(w=>`<span>${w.t}</span>`).join(""); lastPhrase = idx; }
   const pulse = Math.max(0,1-(t-PH[idx][0].s)/.15);
-  capbox.style.transform = `translateY(${pulse*30}px) scale(${1+pulse*.08})`;
+  capbox.style.transform = `translateY(${pulse*30*THEME.pulse}px) scale(${1+pulse*.08*THEME.pulse})`;
   [...capbox.children].forEach((el,i)=>{const w=PH[idx][i]; el.className = t>=w.e?"on":(t>=w.s?"now":"");});
 }
 
@@ -148,17 +171,17 @@ function renderGrain(frame){
   grain.putImageData(grainImage,0,0);
 }
 
-// The renderer awaits this, so a screenshot never captures a face frame that hasn't decoded yet
-function renderFaces(t, frame){
-  const src = `face/f${String(frame).padStart(5,"0")}.jpg`;
-  return Promise.all(FACES.filter(({s,e})=>t>=s&&t<e).map(({img})=>{
+// The renderer awaits this, so a screenshot never captures a camera or clip frame that hasn't decoded yet
+function renderMedia(t, frame){
+  return Promise.all(MEDIA.filter(({s,e})=>t>=s&&t<e).map(({img,dir,fix})=>{
+    const src = `${dir}/f${String(frame).padStart(5,"0")}.jpg`;
     if(img.getAttribute("src")===src) return null;
     img.src = src;
-    return img.decode().catch(()=>{ throw new Error(`missing face frame ${src} at t=${t.toFixed(2)}; re-run extract_face.sh with this shot's in/out`); });
+    return img.decode().catch(()=>{ throw new Error(`missing frame ${src} at t=${t.toFixed(2)}; re-run ${fix} with this shot's in/out`); });
   }));
 }
 
 window.SFX = SFX; window.DURATION = D; window.SHOTS = SHOTS;
-window.renderAt = t => { const frame = Math.round(t*30); tl.seek(t,false); renderCaptions(t); renderText(t); renderGrain(frame); return renderFaces(t, frame); };
+window.renderAt = t => { const frame = Math.round(t*30); tl.seek(t,false); renderCaptions(t); renderText(t); renderGrain(frame); return renderMedia(t, frame); };
 </script>
 </body></html>

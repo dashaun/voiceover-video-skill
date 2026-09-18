@@ -33,7 +33,7 @@ for candidate in "$BRAND" "./brand.json" "$HOME/.config/voiceover-video/brand.js
   if [[ -n "$candidate" && -f "$candidate" ]]; then BRAND="$candidate"; break; fi
 done
 
-FONTS_URL=$(python3 - "$BRAND" <<'PY'
+FONTS_URL=$(python3 - "$BRAND" "$SKILL_DIR/templates/templates.json" <<'PY'
 import json, sys
 path = sys.argv[1]
 try:
@@ -51,7 +51,22 @@ if "googleFontsUrl" not in brand.get("fonts", {}):
     print("brand file missing fonts.googleFontsUrl", file=sys.stderr)
     print("Next: add it, or run init_brand.py to create a brand file", file=sys.stderr)
     sys.exit(1)
-print(brand["fonts"]["googleFontsUrl"])
+# Themes with their own typefaces add families to the brand's request, so one download covers every theme
+url = brand["fonts"]["googleFontsUrl"]
+manifest = sys.argv[2]
+try:
+    themes = json.load(open(manifest, encoding="utf-8")).get("templates", [])
+except (json.JSONDecodeError, OSError) as e:
+    print(f"cannot read theme catalogue {manifest}: {e}", file=sys.stderr)
+    print("Next: restore templates/templates.json from git", file=sys.stderr)
+    sys.exit(1)
+extra = [t["fonts"] for t in themes if t.get("fonts")]
+if extra:
+    base, _, query = url.partition("?")
+    params = [p for p in query.split("&") if p and not p.startswith("display=")]
+    params += ["family=" + f for f in extra if "family=" + f not in params]
+    url = base + "?" + "&".join(params + ["display=swap"])
+print(url)
 PY
 )
 
@@ -78,6 +93,11 @@ if [[ ! -f "$ASSETS_DIR/fonts.css" || "$(cat "$ASSETS_DIR/fonts.url" 2>/dev/null
     sed -i.bak "s#$url#$file#g" "$ASSETS_DIR/fonts.css" && rm -f "$ASSETS_DIR/fonts.css.bak"
   done
   echo "$FONTS_URL" > "$ASSETS_DIR/fonts.url"
+fi
+
+# YouTube clips are optional; everything else works without them
+if ! command -v yt-dlp >/dev/null; then
+  echo "optional: yt-dlp not found — YouTube clips disabled (pipx install yt-dlp)"
 fi
 
 echo "ready · brand $BRAND"

@@ -7,9 +7,8 @@ Brand resolution order: --brand, ./brand.json, ~/.config/voiceover-video/brand.j
 then the bundled brand.example.json.
 
 Template (theme) selection: --template picks a visual theme from templates/templates.json.
-If omitted, the default theme is used. The agent should choose a theme that matches the
-topic's mood: kinetic for high-energy tech, minimal for thoughtful explainers, retro for
-history-of-tech or CLI stories.
+If omitted, the default theme is used. Each theme brings its CSS and a motion profile
+(default shot entry, shake, flash, caption pulse); templates.json says which mood each suits.
 """
 
 import argparse
@@ -122,10 +121,13 @@ def main() -> int:
     html = (SKILL_DIR / "templates" / template["file"]).read_text(encoding="utf-8")
 
     # Inject the theme CSS so each work dir is self-contained and the agent can switch themes
-    theme_css = (SKILL_DIR / "templates" / "themes" / f"{template['id']}.css").read_text(encoding="utf-8")
+    themes_dir = SKILL_DIR / "templates" / "themes"
+    theme_css = (themes_dir / "shared.css").read_text(encoding="utf-8") + "\n" + \
+        (themes_dir / f"{template['id']}.css").read_text(encoding="utf-8")
     for key, value in values.items():
         theme_css = theme_css.replace("{{" + key + "}}", str(value))
     values["theme.css"] = theme_css
+    values["theme.motion"] = json.dumps(template.get("motion", {}))
 
     for key, value in values.items():
         html = html.replace("{{" + key + "}}", str(value))

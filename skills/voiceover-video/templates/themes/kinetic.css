@@ -1,4 +1,5 @@
 :root{--bg:{{brand.colors.bg}};--s1:{{brand.colors.surface1}};--s2:{{brand.colors.surface2}};--border:{{brand.colors.border}};--accent:{{brand.colors.accent}};--body:{{brand.colors.textBody}};--muted:{{brand.colors.textMuted}};--green:#3ddc84;--red:#ff3b3b;--W:{{width}}px;--H:{{height}}px}
+:root{--panel:linear-gradient(160deg,var(--s2),var(--s1));--panel-fg:#fff;--frame:var(--accent);--radius:28px;--display:"{{brand.fonts.heading}}"}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:var(--W);height:var(--H);overflow:hidden;background:#07070d;font-family:"{{brand.fonts.heading}}","Arial Narrow",Arial,sans-serif;color:#fff}
 #world{position:absolute;inset:0;overflow:hidden;background:var(--bg)}

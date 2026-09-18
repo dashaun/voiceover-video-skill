@@ -1,4 +1,5 @@
 :root{--bg:{{brand.colors.bg}};--s1:{{brand.colors.surface1}};--s2:{{brand.colors.surface2}};--border:{{brand.colors.border}};--accent:{{brand.colors.accent}};--body:{{brand.colors.textBody}};--muted:{{brand.colors.textMuted}};--green:#33ff00;--red:#ff3300;--W:{{width}}px;--H:{{height}}px}
+:root{--panel:#14140f;--panel-fg:#ffb000;--frame:#3a3a25;--radius:4px;--display:"{{brand.fonts.mono}}";--ticker-bg:#ffb000;--ticker-fg:#0c0c08}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:var(--W);height:var(--H);overflow:hidden;background:#0c0c08;font-family:"{{brand.fonts.mono}}","Courier New",monospace;color:#ffb000}
 #world{position:absolute;inset:0;overflow:hidden;background:#0c0c08}

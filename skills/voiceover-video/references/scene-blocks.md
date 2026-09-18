@@ -26,6 +26,18 @@ lines. Pick a block for each line of speech, then time it to the word.
 | `whipUp` | vertical whip | lists, rising energy, "then…" |
 | `zoom` | punch in from blur | reveals, new chapter |
 | `fade` | soft | reflective lines, setup before a reveal |
+| `soft` | scale-settle with blur | polished launches, calm reveals |
+| `slide` | push in from the right, no blur | next item, next chapter |
+| `wipe` | hard-edged left-to-right reveal | news beats, diagram steps |
+| `iris` | circle opening from the centre | focusing on one person or thing |
+| `flash` | white flash cut | a sudden turn, "and then…" |
+| `glitch` | jitter + colour shift + buzz | failures, hacks, retro beats |
+| `cut` | hard cut, even when the theme has a default entry | overriding the theme |
+
+Omitting `enter` uses the theme's default (`templates.json` → `motion.enter`): hard cut for
+`kinetic`/`brutalist`, `fade` for `documentary`/`minimal`, `wipe` for `newsroom`/`blueprint`, `soft` for
+`aurora`, `glitch` for `retro`. The theme also scales every `hit()` shake and flash, so write the same
+powers in every theme and let the theme decide how loud they look.
 
 ---
 
@@ -76,6 +88,78 @@ text and pushes typing SFX. For mixed colours (red error lines), keep a line arr
 ### Photo tape-in
 A person or artefact. Tilted polaroid with a tape strip, slow push-in (`drift` on the `<img>`
 scale), a typed name tag and a stamp.
+
+### Pan-and-zoom photo *(Ken Burns)*
+Any photo held more than ~1.5s. Full-bleed or inside a `.photo` frame; the frame clips the push-in.
+```html
+<div class="photo" style="inset:0"><img id="s02img" src="assets/torvalds-portrait.jpg" alt="" style="object-position:50% 30%"></div>
+<div class="credit" style="right:40px;top:160px">Krd / CC BY-SA 4.0</div>
+```
+```js
+kenBurns("#s02img", 2.8, 6.1, "in");   // "in" · "out" · "left" · "right"
+```
+
+### Lower third
+Name and role the first time a person appears on screen. Keep it above the caption zone
+(vertical: top ≤ 1300).
+```html
+<div class="lower" id="s02lt" style="top:1180px"><div class="lower-name">Linus Torvalds</div><div class="lower-role">Creator of Linux &amp; Git</div></div>
+```
+```js
+lowerThird("#s02lt", 3.2, 6.0);   // wipes in, wipes out 0.35s before the end
+```
+
+### Clip in frame *(picture-in-picture)*
+The person speaking, the product demo, the launch on stage. The box size must match the size passed to
+`extract_clip.sh`; always add a `.credit` line.
+```html
+<div class="pip" id="s04pip" style="left:90px;top:440px;width:900px;height:620px"><img id="s04img" alt=""><span class="tag">LF · 2017</span></div>
+<div class="credit" style="left:90px;top:1080px">The Linux Foundation / CC BY 4.0</div>
+```
+```js
+pop("#s04pip", 9.1);
+clip("#s04img", "torvalds", 8.9, 12.6);   // same name, in and out as extract_clip.sh
+```
+
+### Full-bleed clip
+Same as the face shot, fed from `extract_clip.sh … vertical …` instead of the camera.
+```html
+<section class="shot face" id="s07"><img alt=""></section>
+```
+```js
+shot("s07", 20.1, 23.4, "zoom"); clip("#s07>img", "launch", 20.1, 23.4);
+```
+
+### Portrait quote
+The person's own words when their clip can't carry sound, or to repeat the line they just said.
+```html
+<div class="quote" id="s05q" style="top:420px">
+  <div class="portrait"><img src="assets/torvalds-portrait.jpg" alt=""></div>
+  <q>People can agree on the end result.</q>
+  <cite>Linus Torvalds</cite>
+</div>
+```
+```js
+rise("#s05q", 12.7, .5);
+```
+
+### Duo
+Two people, two products, before/after: two photos side by side.
+```html
+<div class="duo" style="left:70px;right:70px;top:380px;height:760px">
+  <div class="photo"><img src="assets/a.jpg" alt=""></div><div class="photo"><img src="assets/b.jpg" alt=""></div>
+</div>
+```
+
+### Ticker
+A scrolling news band, mostly for `newsroom`. Place it under the signature (vertical: top 150).
+Make the text long enough to fill the shot's scroll: ~160px per second.
+```html
+<div class="ticker" style="top:150px"><span id="s04tk">BREAKING · … · BREAKING · …</span></div>
+```
+```js
+ticker("#s04tk", 8.9, 12.6);
+```
 
 ### Stamp
 Verdicts: `NOT READY`, `CONFIDENTIAL`, `SUN MICROSYSTEMS`.

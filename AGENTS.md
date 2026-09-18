@@ -16,8 +16,8 @@ skills/voiceover-video/
 ├── references/scene-blocks.md   scene catalogue, pacing rules, sound cues, safe zones
 ├── templates/                   visual theme engine + themes
 │   ├── kinetic.html             the shared HTML/JS engine + demo shots
-│   ├── templates.json           theme catalogue and selection rules
-│   └── themes/                  per-theme CSS (kinetic, minimal, retro)
+│   ├── templates.json           theme catalogue: mood, extra fonts, motion profile
+│   └── themes/                  shared.css (people/footage blocks) + one CSS per theme
 └── scripts/
     ├── setup.sh                 dependency check, playwright-core + Chromium, GSAP, fonts
     ├── transcribe.py            faster-whisper, word-level timestamps
@@ -25,11 +25,13 @@ skills/voiceover-video/
     ├── init_brand.py            first-run answers → ~/.config/voiceover-video/brand.json
     ├── fill_template.py         brand + geometry + duration → work/index.html
     ├── extract_face.sh          to-camera video → face/fNNNNN.jpg, numbered by edit frame
+    ├── find_media.py            photo/video search (Commons, Openverse, Archive, Pexels, web, YouTube) + credits.json
+    ├── extract_clip.sh          fetched clip → clips/<name>/fNNNNN.jpg (+ clips/<name>.wav)
     ├── render.js                stills | frames | cues | check, driven by window.renderAt(t)
     ├── render-frames.sh         parallel frame rendering
     ├── contact-sheet.sh         stills → one review image
     ├── synth_audio.py           cues.json → sfx.wav + music.wav
-    └── mix-encode.sh            voice + ducked music + SFX → mp4
+    └── mix-encode.sh            voice + ducked clip audio + ducked music + SFX → mp4
 ```
 
 `.claude-plugin/marketplace.json` registers the skill for Claude Code's `/plugin install`, and
@@ -68,14 +70,20 @@ names, breaks this.
    `setup.sh`. Never add them to git.
 7. **Placeholders are `{{dotted.names}}`** filled by `fill_template.py`. A new placeholder needs a value
    there and, if it comes from the brand, a key in `brand.example.json`.
-8. **Scripts fail loud.** Every script prints a one-line result and a `Next:` line, and on failure names
+8. **Every fetched file is credited.** `find_media.py` records each download in `credits.json` with its
+   licence, and marks web and YouTube files as unlicensed so the report can name them. A new source must
+   do the same, and must be listed in `LICENSED_SOURCES` only if its results genuinely carry a licence.
+9. **Every theme styles every block.** A theme CSS defines every class `kinetic.css` does plus the
+   `--panel`, `--panel-fg`, `--frame`, `--radius`, `--display` tokens `shared.css` reads. A theme with its
+   own typeface lists it in `templates.json` → `fonts`; `setup.sh` downloads it.
+10. **Scripts fail loud.** Every script prints a one-line result and a `Next:` line, and on failure names
    the missing input and the fix. Match that shape.
 
 ## Conventions
 
 - **Bash:** `set -euo pipefail`, quote every variable, `SCRIPTS_DIR` resolved from `BASH_SOURCE`. Scripts
   are called from zsh too — never rely on word splitting.
-- **Python:** 3.10+, standard library plus `numpy` and `faster-whisper` only. `argparse`, a `main()`
+- **Python:** 3.10+, standard library plus `numpy` and `faster-whisper` only (`find_media.py` uses `urllib`). `argparse`, a `main()`
   returning an exit code, errors to stderr.
 - **JavaScript:** `render.js` depends on `playwright-core` only; the template on GSAP only.
 - **Comments** explain *why*, never *what*. One line.

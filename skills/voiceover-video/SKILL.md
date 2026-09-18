@@ -1,6 +1,6 @@
 ---
 name: voiceover-video
-description: "Turn a voice recording (voice note, narration, podcast snippet) into a fully animated, brand-styled video — local word-level transcription, a timed shot list, kinetic typography, camera moves, real images, synthesized sound design and a voice-ducked music bed, rendered as a 1080x1920 Short (or 1920x1080). Also takes a to-camera phone recording: the opening line and sign-off stay on camera as face shots and everything between is animated. Use when asked to 'make a video out of this audio', 'animate this voice note', 'turn this narration into a Short', 'edit this like a pro', 'create a video from my voiceover', or 'make a reel from this recording'."
+description: "Turn a voice recording (voice note, narration, podcast snippet) into a fully animated, brand-styled video — local word-level transcription, a timed shot list, kinetic typography, camera moves, real photos and licensed video clips of the people and products it mentions, synthesized sound design and a voice-ducked music bed, rendered as a 1080x1920 Short (or 1920x1080). Also takes a to-camera phone recording: the opening line and sign-off stay on camera as face shots and everything between is animated. Use when asked to 'make a video out of this audio', 'animate this voice note', 'turn this narration into a Short', 'edit this like a pro', 'create a video from my voiceover', or 'make a reel from this recording'."
 ---
 
 # Voiceover Video Skill
@@ -133,42 +133,67 @@ Load `references/scene-blocks.md`. Write a shot table — one row per shot, cut 
 ```
 
 Rules: a new shot every 1–4 seconds; a hit only on a word that deserves it; captions hidden whenever
-the spoken word *is* the visual. Find images before the table is final (Step 5).
+the spoken word *is* the visual. Find photos and clips before the table is final (Step 5).
 
 **Pick the template (theme) now.** Read `templates/templates.json` and choose the `id` whose mood
-matches the topic:
+matches the topic. Each theme changes type, colour, captions *and* motion (default shot entry, shake,
+flash), so it is a real choice, not a palette swap:
 
-- `kinetic` — fast, dark, neon, high-energy tech explainers and product launches.
-- `minimal` — light, spacious, editorial; thought leadership and deep dives.
-- `retro` — CRT/phosphor glow; history-of-tech, CLI demos, hacking stories.
+| id | Pick it for |
+|---|---|
+| `kinetic` | fast, dark, neon — tech explainers, launches, listicles (default) |
+| `documentary` | founder stories, company origins, biographies — serif, film grain, slow fades |
+| `newsroom` | announcements, funding, outages, "this week in tech" — condensed type, ticker, wipes |
+| `blueprint` | system design, architecture, "how X works under the hood" — grid paper, dashed outlines |
+| `brutalist` | hot takes, myth busting — light background, hard black borders, hard cuts, big shake |
+| `aurora` | AI and SaaS launches, dev tools — gradients, frosted glass, soft entries |
+| `minimal` | thought leadership, deep dives — light, editorial, calm |
+| `retro` | history of tech, CLI demos, hacking stories — CRT amber, glitch cuts |
 
-Pass it to `fill_template.py` with `--template <id>`. If the user asked for a specific look, use that.
-Otherwise, default to `kinetic`.
+If the user asked for a specific look, use that. Pass it to `fill_template.py` with `--template <id>`.
 
 With a `video`, the first and last rows are face shots (*Face hook*, *Face sign-off*). The hook runs
 from 0 to the last word of the script's first `[FACE]` section (no script: the first sentence). The
 sign-off runs from the first word of the last `[FACE]` section to the end. A series badge goes on shot 02.
 
-Show the table and the image list to the user. Wait for a yes — this is the expensive part to change
-later.
+Show the table and the media list (every photo and clip, with its source and licence) to the user.
+Wait for a yes — this is the expensive part to change later.
 
 ---
 
-## Step 5 — Source images
+## Step 5 — Source photos and clips
 
-Prefer Wikimedia Commons (free licences, stable URLs). Search, download, then **look at every file
-before using it** — search results lie (a "Star7" search returned an unrelated party photo).
+Whenever the audio names a person, company, product or event, show it: the founder on stage, the
+product launch, the person saying the line. `find_media.py` searches licensed sources (Wikimedia
+Commons, Openverse, Internet Archive, and Pexels with `PEXELS_API_KEY`) alongside the open web (Bing
+images) and YouTube:
 
 ```bash
-curl -s -A "voiceover-video-skill/1.0" "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srlimit=10&format=json&srsearch=<query>"
-curl -sL -A "voiceover-video-skill/1.0" -o <work>/assets/<name> "https://commons.wikimedia.org/wiki/Special:FilePath/<File_Name.jpg>"
+python3 SKILL_DIR/scripts/find_media.py search "$work" "Yang Zhilin Moonshot AI"                    # photos
+python3 SKILL_DIR/scripts/find_media.py search "$work" "Yang Zhilin keynote" --kind video           # talks
+python3 SKILL_DIR/scripts/find_media.py fetch "$work" m6 --name yang-launch
+python3 SKILL_DIR/scripts/find_media.py fetch "$work" m8 --name yang-gtc --section 120-150
+python3 SKILL_DIR/scripts/find_media.py fetch "$work" --url "https://youtu.be/…" --name demo --section 30-45
 ```
 
-Logos: `https://cdn.jsdelivr.net/npm/simple-icons@13/icons/<slug>.svg`. Keep a credits list — file
-name, author, licence — for the report.
+Results without a licence are marked ⚠. When a licensed result is as good a shot, take it; otherwise
+use the best shot. Prefer the subject's own channel (a company's official YouTube) over re-uploads.
+Search queries that work: the name plus the company, then name + event ("keynote", "launch",
+"interview"). Watermarked stock sites are filtered out.
 
-If you cannot view images, never place one unseen: list each file with its source URL and what you
-expect it to show, and ask the user to confirm before Step 6.
+A YouTube or page fetch downloads the whole video once into `clips/src/.cache/` (720p for anything over
+15 minutes), then cuts `--section` (≤120s) from it, so later sections of the same talk are instant. Tell
+the user the first fetch of a long talk takes a few minutes. To find a quote inside a section, run
+`transcribe.py` on the fetched clip and use the word times as `--from` in Step 6.
+
+**Look at every photo and every preview sheet before using it.** Search results lie: the wrong person
+with the same name, a news site's logo or banner burned into the image, a thumbnail with text on it.
+Crop around a banner with `object-position` or pick another result. If you cannot view images, list each
+file with its source and what you expect it to show, and ask the user to confirm.
+
+Logos: `https://cdn.jsdelivr.net/npm/simple-icons@13/icons/<slug>.svg`. Every fetch is recorded in
+`<work>/credits.json`; log hand-sourced files yourself. The report lists every ⚠ file so the user knows
+which footage belongs to someone else before posting.
 
 ---
 
@@ -196,11 +221,23 @@ With a `video`, extract the camera frames for both face shots, using the shot li
 bash SKILL_DIR/scripts/extract_face.sh <video> <work> vertical <hook-in> <hook-out> <signoff-in> <signoff-out>
 ```
 
+For every clip shot, cut the fetched clip to the shot's in/out. The size is the box it fills — `vertical`
+or `landscape` for full-bleed, or the `.pip` box size like `900x620`. `--from` is the second inside the
+clip to start at. Add `--audio` when the clip's own sound should play — a founder's line, a crowd:
+
+```bash
+bash SKILL_DIR/scripts/extract_clip.sh "$work"/clips/src/torvalds-talk.mp4 "$work" 900x620 torvalds 8.9 12.6 --from 20 --audio
+```
+
+Clip audio ducks under the narration automatically, so it only really plays over a pause in the voice.
+For the speaker's line to land, place the clip over a gap in the recording (a scripted `[CLIP]` beat) or
+leave it silent and put the quote on screen with a *Portrait quote*.
+
 Replace the demo shots between `BEGIN SHOTS` / `END SHOTS` (markup) and `BEGIN TIMELINE` /
 `END TIMELINE` (GSAP) with your shot list, using the helpers the template already defines. Keep the
 outer `#world` and `#cam` containers intact:
-`shot()`, `slam()`, `hit()`, `rise()`, `pop()`, `drift()`, `typer()`, `counter()`, `terminal()`, `faceCam()`,
-and the `NOCAP` ranges. Every helper that makes noise pushes its own sound cue.
+`shot()`, `slam()`, `hit()`, `rise()`, `pop()`, `drift()`, `kenBurns()`, `lowerThird()`, `ticker()`,
+`typer()`, `counter()`, `terminal()`, `faceCam()`, `clip()`, and the `NOCAP` ranges. Every helper that makes noise pushes its own sound cue.
 
 The display style (`.xl`) is uppercase and width-expanded; captions are condensed. Size headlines
 for the expanded width — a vertical frame fits ~6 characters at 250px.
@@ -296,7 +333,7 @@ A still rendered from the HTML is not proof the video contains the fix.
 ```
 <slug>.mp4 · 1080x1920 · 108.2s · 112 MB · -14.7 LUFS
 
-  shots 30 · sound cues 117 · images 4 · captions fixed 6
+  shots 30 · sound cues 117 · images 4 · clips 2 · captions fixed 6
 
   credits     James Gosling 2008 (Wikimedia, CC BY-SA) · Solitary oak (geograph, CC BY-SA)
   unverified  music taste — listen before posting · timeline years are stylistic
@@ -304,14 +341,18 @@ A still rendered from the HTML is not proof the video contains the fix.
 Next: preview it on a phone, then post it with the credits in the description
 ```
 
-`mix-encode.sh` prints raw `ffprobe` output; reformat it into the line above for the report.
+`mix-encode.sh` prints raw `ffprobe` output; reformat it into the line above for the report. Get the
+credits with `find_media.py credits "$work"` and give them to the user ready to paste into the description.
+Name any unlicensed clip on its own line.
 
 ---
 
 ## Non-negotiables
 
 - **Shot list confirmed before authoring.** Rendering is cheap; redesigning thirty shots is not.
-- **Every image is looked at before it is used.** Never ship an image you have not seen.
+- **Every image and clip is looked at before it is used.** Never ship media you have not seen.
+- **Every file is credited.** Licensed or not, each photo and clip goes in the description credits, and
+  the report names every ⚠ file.
 - **Every fix is verified in the encoded file**, not just in a still.
 - Transcription is local. Never upload the audio.
 - One brand accent. Green only for success states, red only for errors.
@@ -320,6 +361,7 @@ Next: preview it on a phone, then post it with the credits in the description
 - Report every image credit and every invented detail (dates, labels) that isn't in the audio.
 - Never commit rendered files or `work/`.
 - `faceCam()` in/out times match the `extract_face.sh` ranges exactly; never re-time a face shot alone.
+  The same holds for `clip()` and `extract_clip.sh`.
 
 ---
 
@@ -335,5 +377,9 @@ Next: preview it on a phone, then post it with the credits in the description
 | `PAGE ERROR` in render output | a script error in the timeline | fix it; GSAP only warns on missing selectors, so also check each shot visually |
 | Whisper sits at low CPU for minutes | model download on first run | expected once; the model is cached afterwards |
 | Shot renders blank | `shot()` start ≥ end, or the shot id is misspelled | check the shot row's in/out times |
-| `missing face frame …` stops the render | a `faceCam()` range is wider than the extracted one | re-run `extract_face.sh` with that shot's in/out |
+| `missing frame face/… ` or `clips/…` stops the render | a `faceCam()` / `clip()` range is wider than the extracted one | re-run `extract_face.sh` / `extract_clip.sh` with that shot's in/out |
+| `find_media.py` search returns nothing | query too specific, or a source is down (its error prints on stderr) | the name plus the company; then `--kind video`; then a logo or an era look |
+| YouTube fetch crawls or fails with a challenge warning | no JS runtime, or yt-dlp is out of date | needs `node` or `deno` on PATH; `pipx upgrade yt-dlp` |
+| Clip shows the wrong moment | `--from` is in the fetched clip's seconds, not the original's | subtract the `--section` start |
+| Old clip sound still in the mix | a stale `clips/<name>.wav` from an earlier cut | re-run `extract_clip.sh` for that clip; it removes the old `.wav` |
 | Face shots look grey and washed out | HDR (HLG) phone recording, tone-mapped without metadata | record in SDR (iPhone: Settings › Camera › Formats, HDR Video off) |

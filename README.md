@@ -2,7 +2,7 @@
 
 **An AI-agent skill that turns a voice recording into a fully edited, animated short video.**
 
-Drop in a voice note. Your agent transcribes it word by word, designs a shot list, finds images, builds
+Drop in a voice note. Your agent transcribes it word by word, designs a shot list, finds licensed photos and video of the people and products you mention, builds
 every scene as kinetic typography and motion graphics timed to your words, adds sound design and a
 music bed that ducks under your voice, and renders a 1080×1920 Short.
 
@@ -20,8 +20,13 @@ your machine.
 - **Kinetic typography**: slams, highlight boxes, strike-throughs, stacked slogans, counters
 - **Scene blocks**: terminals typing, stamps, VHS and CRT era looks, diagrams with flowing packets,
   charts, photo tape-ins, logo walls, montages
-- **Dynamic themes**: the agent picks a visual treatment (kinetic neon, minimal editorial, retro terminal)
-  to match the topic, not a single fixed template
+- **Eight themes that move differently**: kinetic, documentary, newsroom, blueprint, brutalist, aurora,
+  minimal, retro. Each brings its own type, colour, captions *and* motion (default transition, shake,
+  flash); the agent picks one to fit the topic
+- **Real people, real footage**: mention a founder and the agent finds their photos and talks (Wikimedia
+  Commons, Openverse, Internet Archive, web image search, YouTube, optional Pexels), shows them with a
+  lower third, a picture-in-picture clip or a portrait quote, and hands you the credits for the description
+- **Clip audio**: a speaking clip can carry its own sound, ducked under your narration
 - **Camera moves**: whips, punch-in zooms, micro-shake on hits
 - **Sound design**: 10 synthesized cue types (hits, whooshes, typing, ticks, risers…) placed by the
   timeline itself
@@ -42,6 +47,8 @@ transcript.txt ── you proofread ──► build_captions.py
   │
   ▼  the agent writes a shot list  ──► you approve it
   │
+  ▼  find_media.py        photos + clip sections from licensed sources, the web and YouTube, credits.json
+  ▼  extract_clip.sh      clips → frames numbered by edit frame (+ clip audio)
   ▼  fill_template.py + the agent authors the scenes (HTML + GSAP)
   │
   ▼  render.js stills → contact-sheet.sh → the agent reviews, fixes, repeats
@@ -49,7 +56,7 @@ transcript.txt ── you proofread ──► build_captions.py
   ├─► render.js cues → synth_audio.py      sfx.wav + music.wav
   └─► render-frames.sh                     headless Chromium, frame-exact
           │
-          ▼  mix-encode.sh                  voice + ducked music + SFX → mp4
+          ▼  mix-encode.sh                  voice + ducked clip audio + ducked music + SFX → mp4
 ```
 
 Every frame is rendered by seeking a paused timeline to an exact timestamp, so the same composition
@@ -67,6 +74,8 @@ always produces the same video, however slow the machine.
 | Node 18+ | frame rendering |
 | Python 3.10+ with `faster-whisper` and `numpy` | transcription and sound synthesis |
 | FFmpeg | mixing and encoding |
+| `yt-dlp` *(optional)* + `node` or `deno` | YouTube and other video pages; the JS runtime solves YouTube's download challenge |
+| `PEXELS_API_KEY` *(optional)* | adds Pexels stock photos and video to media search ([free key](https://www.pexels.com/api/)) |
 
 Runs on macOS and Linux. On Windows, run your agent inside WSL: the scripts are bash.
 

@@ -73,7 +73,7 @@ if (mode === 'frames' && (Number.isNaN(Number(a)) || Number.isNaN(Number(b)) || 
       const found = await page.evaluate(({ id, W, H }) => {
         const section = document.getElementById(id);
         if (!section) return { missing: true, overflow: [], collide: [], visible: 0 };
-        const decorative = /gridbg|glow|scan|track|pkt|bars|strike|vhs/;
+        const decorative = /gridbg|glow|scan|track|pkt|bars|strike|vhs|ticker/;
         const named = el => (el.id ? '#' + el.id : '.' + ((el.getAttribute('class') || el.tagName.toLowerCase()).split(' ')[0]));
         const capbox = document.getElementById('capbox');
         const capRect = capbox && capbox.style.visibility !== 'hidden' && capbox.children.length
@@ -82,7 +82,7 @@ if (mode === 'frames' && (Number.isNaN(Number(a)) || Number.isNaN(Number(b)) || 
         const out = { missing: false, overflow: [], collide: [], visible: 0 };
         for (const el of section.querySelectorAll('*')) {
           const classes = el.getAttribute('class') || '';
-          if (decorative.test(classes)) continue;
+          if (decorative.test(classes) || el.closest('.ticker')) continue;
           const style = getComputedStyle(el);
           if (style.visibility === 'hidden' || style.display === 'none' || parseFloat(style.opacity) < 0.05) continue;
           const rect = el.getBoundingClientRect();
@@ -94,6 +94,9 @@ if (mode === 'frames' && (Number.isNaN(Number(a)) || Number.isNaN(Number(b)) || 
           // A centred .cx block spans the whole frame even when its text runs past the edge, so
           // measure the text itself; images and cards are measured by their own box
           let box = rect;
+          // A pushed-in photo overflows its frame by design; the frame clips it, so measure the frame
+          const frame = el.tagName === 'IMG' ? el.parentElement : null;
+          if (frame && frame !== section && getComputedStyle(frame).overflow === 'hidden') box = frame.getBoundingClientRect();
           if (isText) {
             const range = document.createRange();
             range.selectNodeContents(el);
