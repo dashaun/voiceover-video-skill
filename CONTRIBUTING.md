@@ -52,8 +52,9 @@ ln -sfn "$PWD/skills/voiceover-video" ~/.claude/skills/voiceover-video
 ### Adding a scene block
 
 1. Add the markup pattern and GSAP recipe to `references/scene-blocks.md`, with when to use it.
-2. If it needs new CSS or a helper, add it to `templates/composition.html` — deterministic, and
-   pushing its own sound cues.
+2. If it needs new CSS or a helper, add it to the shared engine (`templates/kinetic.html`) and to every
+   theme CSS that should support it — deterministic, and pushing its own sound cues. If the block is
+   theme-specific, document which themes support it in `templates/templates.json`.
 3. If it introduces a cue type, handle it in `scripts/synth_audio.py` and list it in the cue table.
 4. Render a short composition that uses it and include the stills in the PR.
 

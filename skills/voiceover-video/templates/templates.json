@@ -1,0 +1,30 @@
+{
+  "$schema": "./templates.schema.json",
+  "templates": [
+    {
+      "id": "kinetic",
+      "file": "kinetic.html",
+      "name": "Kinetic Neon",
+      "default": true,
+      "mood": "fast, high-energy, dark-and-neon",
+      "best_for": ["tech explainers", "product launches", "hot takes", "listicles"],
+      "blocks": ["slam", "strike", "highlight-box", "stacked-slams", "counter", "terminal", "stamp", "vhs", "crt", "diagram", "chart", "logo-wall", "path", "outro"]
+    },
+    {
+      "id": "minimal",
+      "file": "kinetic.html",
+      "name": "Minimal Editorial",
+      "mood": "clean, spacious, confident",
+      "best_for": ["thought leadership", "deep dives", "monologues", "soft announcements"],
+      "blocks": ["slam", "highlight-box", "counter", "terminal", "diagram", "quote", "outro"]
+    },
+    {
+      "id": "retro",
+      "file": "kinetic.html",
+      "name": "Retro Terminal",
+      "mood": "CRT glow, phosphor, 80s/90s computing",
+      "best_for": ["history of tech", "hacking stories", "CLI demos", "retro gaming"],
+      "blocks": ["terminal", "counter", "stamp", "crt", "diagram", "typewriter", "outro"]
+    }
+  ]
+}

@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """Copy the composition template into a work directory with every placeholder filled.
 
-  fill_template.py <work-dir> <duration> [--format vertical|landscape] [--brand path]
+  fill_template.py <work-dir> <duration> [--format vertical|landscape] [--brand path] [--template id]
 
 Brand resolution order: --brand, ./brand.json, ~/.config/voiceover-video/brand.json,
 then the bundled brand.example.json.
+
+Template (theme) selection: --template picks a visual theme from templates/templates.json.
+If omitted, the default theme is used. The agent should choose a theme that matches the
+topic's mood: kinetic for high-energy tech, minimal for thoughtful explainers, retro for
+history-of-tech or CLI stories.
 """
 
 import argparse
@@ -20,6 +25,13 @@ FORMATS = {
 }
 
 
+def load_templates():
+    manifest_path = SKILL_DIR / "templates" / "templates.json"
+    if not manifest_path.is_file():
+        return {"templates": []}
+    return json.loads(manifest_path.read_text(encoding="utf-8"))
+
+
 def resolve_brand(explicit):
     candidates = [explicit] if explicit else []
     candidates += [Path("brand.json"), Path.home() / ".config" / "voiceover-video" / "brand.json",
@@ -30,12 +42,30 @@ def resolve_brand(explicit):
     return None
 
 
+def resolve_template(template_id):
+    templates = load_templates().get("templates", [])
+    by_id = {t["id"]: t for t in templates}
+    if template_id:
+        if template_id not in by_id:
+            print(f"Unknown template '{template_id}'", file=sys.stderr)
+            print(f"Next: use one of {', '.join(by_id)} or omit --template for the default", file=sys.stderr)
+            return None
+        return by_id[template_id]
+    for t in templates:
+        if t.get("default"):
+            return t
+    if templates:
+        return templates[0]
+    return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("work", type=Path)
     parser.add_argument("duration", type=float)
     parser.add_argument("--format", choices=FORMATS, default="vertical")
     parser.add_argument("--brand", type=Path, default=None)
+    parser.add_argument("--template", default=None, help="theme id from templates/templates.json")
     args = parser.parse_args()
 
     brand_path = resolve_brand(args.brand)
@@ -69,6 +99,12 @@ def main() -> int:
         print("Next: pass the composition length in seconds", file=sys.stderr)
         return 1
 
+    template = resolve_template(args.template)
+    if template is None:
+        print("No templates found in templates/templates.json", file=sys.stderr)
+        print("Next: check that templates/ contains a templates.json manifest", file=sys.stderr)
+        return 1
+
     geometry = FORMATS[args.format]
     values = {
         "width": geometry["width"],
@@ -83,7 +119,14 @@ def main() -> int:
     }
     values.update({f"brand.colors.{key}": value for key, value in brand["colors"].items()})
 
-    html = (SKILL_DIR / "templates" / "composition.html").read_text(encoding="utf-8")
+    html = (SKILL_DIR / "templates" / template["file"]).read_text(encoding="utf-8")
+
+    # Inject the theme CSS so each work dir is self-contained and the agent can switch themes
+    theme_css = (SKILL_DIR / "templates" / "themes" / f"{template['id']}.css").read_text(encoding="utf-8")
+    for key, value in values.items():
+        theme_css = theme_css.replace("{{" + key + "}}", str(value))
+    values["theme.css"] = theme_css
+
     for key, value in values.items():
         html = html.replace("{{" + key + "}}", str(value))
 
@@ -103,7 +146,7 @@ def main() -> int:
     if not vendor.exists():
         vendor.symlink_to(SKILL_DIR / "assets", target_is_directory=True)
 
-    print(f"{args.work / 'index.html'} · {geometry['width']}x{geometry['height']} · {args.duration:.2f}s · brand {brand_path}")
+    print(f"{args.work / 'index.html'} · {geometry['width']}x{geometry['height']} · {args.duration:.2f}s · template {template['id']} · brand {brand_path}")
     print("Next: replace the demo shots between BEGIN/END SHOTS and BEGIN/END TIMELINE")
     return 0
 

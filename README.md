@@ -20,6 +20,8 @@ your machine.
 - **Kinetic typography**: slams, highlight boxes, strike-throughs, stacked slogans, counters
 - **Scene blocks**: terminals typing, stamps, VHS and CRT era looks, diagrams with flowing packets,
   charts, photo tape-ins, logo walls, montages
+- **Dynamic themes**: the agent picks a visual treatment (kinetic neon, minimal editorial, retro terminal)
+  to match the topic, not a single fixed template
 - **Camera moves**: whips, punch-in zooms, micro-shake on hits
 - **Sound design**: 10 synthesized cue types (hits, whooshes, typing, ticks, risers…) placed by the
   timeline itself

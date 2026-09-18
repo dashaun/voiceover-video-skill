@@ -27,6 +27,7 @@ block catalogue, the pacing rules, and the sound-cue vocabulary.
 | `audio` or `video` | Yes | `~/Downloads/voice-note.m4a` · a to-camera recording `~/Movies/take-1.mp4` |
 | `script` | No | the script, plain or with `[FACE]` / `[VOICE]` sections; captions are checked against it. Sections start on their own line with exactly `[FACE]` or `[VOICE]` |
 | `format` | No | `vertical` 1080x1920 (default) · `landscape` 1920x1080 |
+| `template` | No | visual theme id from `templates/templates.json` (default `kinetic`) |
 | `music` | No | `synth` (default) · path to a royalty-free track · `none` |
 | `model` | No | `small` (default) · `base` for clean audio, ~2x faster |
 | `vocab` | No | names and terms the speaker uses: `"Kubernetes, Kafka, Jane Doe"` |
@@ -134,6 +135,16 @@ Load `references/scene-blocks.md`. Write a shot table — one row per shot, cut 
 Rules: a new shot every 1–4 seconds; a hit only on a word that deserves it; captions hidden whenever
 the spoken word *is* the visual. Find images before the table is final (Step 5).
 
+**Pick the template (theme) now.** Read `templates/templates.json` and choose the `id` whose mood
+matches the topic:
+
+- `kinetic` — fast, dark, neon, high-energy tech explainers and product launches.
+- `minimal` — light, spacious, editorial; thought leadership and deep dives.
+- `retro` — CRT/phosphor glow; history-of-tech, CLI demos, hacking stories.
+
+Pass it to `fill_template.py` with `--template <id>`. If the user asked for a specific look, use that.
+Otherwise, default to `kinetic`.
+
 With a `video`, the first and last rows are face shots (*Face hook*, *Face sign-off*). The hook runs
 from 0 to the last word of the script's first `[FACE]` section (no script: the first sentence). The
 sign-off runs from the first word of the last `[FACE]` section to the end. A series badge goes on shot 02.
@@ -164,8 +175,9 @@ expect it to show, and ask the user to confirm before Step 6.
 ## Step 6 — Author the composition
 
 ```bash
-python3 SKILL_DIR/scripts/fill_template.py "$work" <duration> --format vertical
+python3 SKILL_DIR/scripts/fill_template.py "$work" <duration> --format vertical --template <template-id>
 # or --format landscape for 1920x1080
+# omit --template to use the default kinetic theme
 ```
 
 `<duration>` = last word end + ~2.5s for the outro; with a `video`, last word end + 0.5s, and never past

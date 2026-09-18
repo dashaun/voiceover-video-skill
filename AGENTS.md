@@ -14,7 +14,10 @@ skills/voiceover-video/
 ├── SKILL.md                     the workflow the agent follows at run time
 ├── brand.example.json           default brand (colours, fonts, handle)
 ├── references/scene-blocks.md   scene catalogue, pacing rules, sound cues, safe zones
-├── templates/composition.html   the animation engine + 3 demo shots
+├── templates/                   visual theme engine + themes
+│   ├── kinetic.html             the shared HTML/JS engine + demo shots
+│   ├── templates.json           theme catalogue and selection rules
+│   └── themes/                  per-theme CSS (kinetic, minimal, retro)
 └── scripts/
     ├── setup.sh                 dependency check, playwright-core + Chromium, GSAP, fonts
     ├── transcribe.py            faster-whisper, word-level timestamps
