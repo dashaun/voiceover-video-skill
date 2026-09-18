@@ -101,6 +101,7 @@ function counter(el, from, to, s, e, sep=false){ COUNTERS.push({el:q(el),from,to
 const MEDIA = [];
 function faceCam(id, s, e, enter){ shot(id, s, e, enter); MEDIA.push({img:q("#"+id+">img"),dir:"face",fix:"extract_face.sh",s,e}); }
 function clip(sel, name, s, e){ MEDIA.push({img:q(sel),dir:"clips/"+name,fix:`extract_clip.sh … ${name} ${s} ${e}`,s,e}); }
+function broll(sel, name, s, e){ clip(sel, name, s, e); }   // alias: b-roll is just a clip under narration
 
 // Lines with mixed colours: [{t, e, html}] rebuilt every frame so seeking stays deterministic
 const TERMINALS = [];

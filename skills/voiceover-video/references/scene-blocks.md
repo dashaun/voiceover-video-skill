@@ -131,6 +131,18 @@ Same as the face shot, fed from `extract_clip.sh … vertical …` instead of th
 shot("s07", 20.1, 23.4, "zoom"); clip("#s07>img", "launch", 20.1, 23.4);
 ```
 
+### B-roll under narration
+Footage playing full-bleed while the voice continues. Add a lower-third or a caption-safe headline so the shot still works muted. `broll()` is an alias for `clip()`.
+```html
+<section class="shot face" id="s08"><img alt=""></section>
+<div class="lower" id="s08lt" style="top:1180px"><div class="lower-name">Linux Foundation</div><div class="lower-role">Collaboration Summit · 2017</div></div>
+```
+```js
+shot("s08", 24.0, 28.5, "fade");
+broll("#s08>img", "summit", 24.0, 28.5);
+lowerThird("#s08lt", 24.2, 28.2);
+```
+
 ### Portrait quote
 The person's own words when their clip can't carry sound, or to repeat the line they just said.
 ```html
